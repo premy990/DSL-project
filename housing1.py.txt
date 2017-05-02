@@ -1,0 +1,199 @@
+﻿
+import os
+from PIL import Image
+import glob
+import numpy as np
+import keras
+from keras.models import Sequential, model_from_json
+from keras.layers import *
+from PIL import Image
+from keras.preprocessing import image
+from keras.models import Sequential
+from keras.layers import Activation, Dropout, Flatten, Dense
+from keras.preprocessing.image import ImageDataGenerator
+from keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D
+from keras import optimizers
+#from keras.applications.vgg16 import preprocess_input
+img_width, img_height = 128,128
+nb_epoch = 100
+nb_train_samples = 720
+nb_validation_samples = 30
+
+train_data_dir = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/train'
+validation_data_dir = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/test'
+ 
+# used to rescale the pixel values from [0, 256] to [0, 1] interval
+datagen = ImageDataGenerator(rescale=1./255)
+ 
+# automagically retrieve images and their classes for train and validation sets
+train_generator = datagen.flow_from_directory(
+        train_data_dir,
+        target_size=(img_width, img_height),
+        batch_size=32,
+        class_mode='categorical')
+ 
+validation_generator = datagen.flow_from_directory(
+        validation_data_dir,
+        target_size=(img_width, img_height),
+        batch_size=32,
+        class_mode='categorical')
+
+#CNN model 
+model = Sequential()
+model.add(Convolution2D(20, 4, 4, input_shape=(img_width, img_height,3)))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(4,4)))
+
+model.add(Convolution2D(200, 2, 2))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+
+model.add(Convolution2D(200, 2, 2))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(2,2)))
+
+model.add(Convolution2D(400, 7, 3))
+model.add(Activation('relu'))
+model.add(MaxPooling2D(pool_size=(1,1)))
+ 
+model.add(Flatten())
+model.add(Dense(128))
+model.add(Activation('relu'))
+model.add(Dropout(0.5))
+model.add(Dense(6))
+model.add(Activation('sigmoid'))
+model.compile(loss='categorical_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+
+ 
+model.fit_generator(
+        train_generator,
+        samples_per_epoch=nb_train_samples,
+        nb_epoch=nb_epoch,
+        validation_data=validation_generator,
+        nb_val_samples=nb_validation_samples)
+
+model.save_weights('/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/train/wt1')
+model.evaluate_generator(validation_generator, nb_validation_samples)
+
+
+
+
+config = model.to_json()
+model = model_from_json(config)
+model.load_weights('/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/train/wt1.h5')
+model.compile(loss='categorical_crossentropy',
+              optimizer='rmsprop',
+              metrics=['accuracy'])
+
+
+
+
+def prediction(img_path):
+ img = image.load_img(img_path, target_size=(128,128))
+ x = image.img_to_array(img)
+ x = np.expand_dims(x, axis=0)
+ features = model.predict(x)
+ return features
+
+
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Fast Food_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Fast Food_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Fast Food_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Fast Food_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Fast Food_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Gas Station_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Gas Station_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Gas Station_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Gas Station_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Gas Station_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/House 1_1_shrink6.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/iss_0_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/iss_0_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/iss_0_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/iss_0_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/iss_0_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Office Building_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Office Building_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Office Building_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Office Building_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/Office Building_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/osrf_elevator_0_shrink10.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/osrf_elevator_1.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/osrf_elevator_1_shrink2.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/osrf_elevator_1_shrink3.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+img_path = '/home/other/16BM6JP21/linear-SVM-on-top-of-CNN-example-master/building_images/predict/testing/osrf_elevator_1_shrink4.jpg'
+Prediction = prediction(img_path)
+print(Prediction)
+
+
+    
+
